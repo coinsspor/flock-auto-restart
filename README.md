@@ -85,7 +85,7 @@ Choose either A or B depending on your needs or preference to handle logging fir
 ### 1. Create the Script
 First, create a script named restart_node.sh:
 ```
-logfile /root/llm-loss-validator/flock.log
+nano restart_node.sh
 ```
 ### 2. Paste the Following Code
 
