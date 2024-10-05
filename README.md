@@ -97,8 +97,8 @@ SCREEN_NAME="flock"
 
 # Başlatma komutlarınızı buraya ekleyin
 START_COMMAND="bash start.sh \
---hf_token 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 \
---flock_api_key 7ZA5T7F7VDAFR0DBQSWQSPY53W8KJB15 \
+--hf_token xxxxxxxxxxxxxxxxx \
+--flock_api_key xxxxxxxxxxxxxxxxxxxxxx \
 --task_id 13 \
 --validation_args_file validation_config_cpu.json.example \
 --auto_clean_cache False"
