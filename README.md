@@ -92,56 +92,66 @@ nano restart_node.sh
 ```
 #!/bin/bash
 
-# Specify the name of your existing screen session
+# Mevcut ekran oturum adınızı belirtin
 SCREEN_NAME="flock"
 
-# Add your start commands here
+# Başlatma komutlarınızı buraya ekleyin
 START_COMMAND="bash start.sh \
---hf_token hf_xxxxxx \
---flock_api_key api_xxxxxxxxx \
---task_id 10 \
+--hf_token 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 \
+--flock_api_key 7ZA5T7F7VDAFR0DBQSWQSPY53W8KJB15 \
+--task_id 13 \
 --validation_args_file validation_config_cpu.json.example \
 --auto_clean_cache False"
 
-# Error check function
+# Hata kontrol fonksiyonu
 check_error() {
-    # Look for error messages in your log file
-    if tail -n 50 /root/llm-loss-validator/flock.log | grep -q "Validation failed"; then
-        return 1  # Error found
+    # Log dosyanızda hata mesajlarını arar
+    if tail -n 25 /root/llm-loss-validator/flock.log | grep -q "Validation failed"; then
+        return 1  # Hata var
+    elif tail -n 25 /root/llm-loss-validator/flock.log | grep -q "Rate limit reached for validation assignment lookup"; then
+        return 2  # Rate limit hatası
     else
-        return 0  # No error
+        return 0  # Hata yok
     fi
 }
 
-# Update function
+# Güncelleme fonksiyonu
 update_project() {
     cd /root/llm-loss-validator
     git pull origin main
+    pip install -r requirements.txt --upgrade
+    pip install -U transformers
     cd src
 }
 
-# Node restart function
+# Node'u yeniden başlatma fonksiyonu
 restart_node() {
-    # Terminate commands running in the current session
+    # Mevcut oturumda çalışan komutları sonlandır
     screen -S "$SCREEN_NAME" -X stuff '^C'
     sleep 2
-    # Run the command in the current session
+    # Komutu mevcut oturumda çalıştır
     screen -S "$SCREEN_NAME" -X stuff "$START_COMMAND\n"
 }
 
-# Main loop
+# Ana döngü
 while true; do
     check_error
-    if [ $? -ne 0 ]; then
-        echo "Error detected. Updating and restarting the node..."
+    error_code=$?
+    if [ $error_code -eq 1 ]; then
+        echo "Validation failed hatası tespit edildi. Güncelleniyor ve node yeniden başlatılıyor..."
+        update_project
+        restart_node
+    elif [ $error_code -eq 2 ]; then
+        echo "Rate limit hatası tespit edildi. Güncelleniyor ve node yeniden başlatılıyor..."
         update_project
         restart_node
     else
-        echo "No error, the node is running fine."
+        echo "Hata yok, node çalışmaya devam ediyor."
     fi
-    # Set how frequently the loop runs
-    sleep 60  # Wait 60 seconds and then recheck
+    # Döngünün kaç saniyede bir çalışacağını ayarlayın
+    sleep 600  # 600 saniye bekle ve tekrar kontrol et
 done
+
 
 ```
 ## 3. Give the Script Execute Permissions
